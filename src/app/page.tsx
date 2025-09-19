@@ -144,16 +144,15 @@ export default function Home() {
                 <div className="w-6 h-6 bg-purple-600 rounded-full"></div>
                 <span className="text-lg font-bold text-black">GharKaKhaana</span>
               </div>
-              <p className="text-black text-sm">
+              <p className="text-gray-600 text-sm">
                 Fast deliveries across Chennai and Delhi. Track your orders in real-time and sign in via your mobile number.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold text-black mb-3">Cities</h3>
-              <ul className="space-y-1 text-sm text-black">
+              <h3 className="font-semibold text-gray-800 mb-3">Cities</h3>
+              <ul className="space-y-1 text-sm text-gray-600">
                 <li>Chennai</li>
-                <li>Delhi</li>
               </ul>
             </div>
 
