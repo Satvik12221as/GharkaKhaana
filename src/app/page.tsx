@@ -145,7 +145,7 @@ export default function Home() {
                 <span className="text-lg font-bold text-gray-800">GharKaKhaana</span>
               </div>
               <p className="text-gray-600 text-sm">
-                Fast deliveries across Chennai and Delhi. Track your orders in real-time and sign in via your mobile number.
+                Order homemade food from anywhere to chennai. Track your orders in real-time and sign in via your mobile number.
               </p>
             </div>
 
