@@ -167,6 +167,7 @@ export default function MapPage() {
   const [transportMode, setTransportMode] = useState<'train' | 'airline' | null>(null);
   const [items, setItems] = useState<string[]>(['', '', '', '', '']);
   const [trackingId, setTrackingId] = useState<string>('');
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const handlePickupPointClick = (point: typeof pickupPoints[0]) => {
     setSelectedPickupPoint(point);
@@ -231,6 +232,16 @@ export default function MapPage() {
     setItems(newItems);
   };
 
+  const handleCopyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(trackingId);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
+
   const closeModals = () => {
     setShowTransportModal(false);
     setShowTrainModal(false);
@@ -270,36 +281,36 @@ export default function MapPage() {
     <div className="flex h-screen">
       {/* Sidebar */}
       <div className="w-80 bg-gray-50 p-6 shadow-lg overflow-y-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Choose Path</h1>
+                <div className="mb-6">
+          <h1 className="text-2xl font-bold text-black mb-4">Choose Path</h1>
 
           {/* From Field */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">From</label>
+            <label className="block text-sm font-medium text-black mb-2">From</label>
             <input
               type="text"
               value={fromLocation}
               onChange={(e) => setFromLocation(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="Enter departure location"
             />
           </div>
 
           {/* To Field */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">To</label>
+            <label className="block text-sm font-medium text-black mb-2">To</label>
             <input
               type="text"
               value={toLocation}
               onChange={(e) => setToLocation(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="Enter destination"
             />
           </div>
 
           {/* Pickup Points List */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">Available Pickup Points</h2>
+            <h2 className="text-lg font-semibold text-black mb-3">Available Pickup Points</h2>
             <div className="space-y-3">
               {pickupPoints.map((point) => (
                 <div
@@ -307,8 +318,8 @@ export default function MapPage() {
                   className="p-3 bg-white rounded-md border border-gray-200 hover:shadow-sm transition-shadow cursor-pointer hover:bg-blue-50"
                   onClick={() => handlePickupPointClick(point)}
                 >
-                  <h3 className="font-medium text-gray-800">{point.name}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{point.address}</p>
+                  <h3 className="font-medium text-black">{point.name}</h3>
+                  <p className="text-sm text-black mt-1">{point.address}</p>
                 </div>
               ))}
             </div>
@@ -325,13 +336,13 @@ export default function MapPage() {
       {showTrainModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
+                        <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-black">
                 Select Train from {selectedPickupPoint?.name}
               </h2>
               <button
                 onClick={closeModals}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
+                className="text-black hover:text-gray-700 text-2xl"
               >
                 ×
               </button>
@@ -346,13 +357,13 @@ export default function MapPage() {
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="font-semibold text-gray-800">
+                      <h3 className="font-semibold text-black">
                         {train.number} - {train.name}
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">{train.frequency}</p>
+                      <p className="text-sm text-black mt-1">{train.frequency}</p>
                     </div>
                     <div className="text-right">
-                      <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                      <div className="bg-blue-100 text-black px-3 py-1 rounded-full text-sm font-medium">
                         {train.departure}
                       </div>
                     </div>
@@ -360,20 +371,20 @@ export default function MapPage() {
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-500">From: </span>
-                      <span className="text-gray-800">{train.departureStation}</span>
+                      <span className="text-black">From: </span>
+                      <span className="text-black">{train.departureStation}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">To: </span>
-                      <span className="text-gray-800">{train.arrivalStation}</span>
+                      <span className="text-black">To: </span>
+                      <span className="text-black">{train.arrivalStation}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Arrival: </span>
-                      <span className="text-gray-800">{train.arrival}</span>
+                      <span className="text-black">Arrival: </span>
+                      <span className="text-black">{train.arrival}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Duration: </span>
-                      <span className="text-gray-800">{train.duration}</span>
+                      <span className="text-black">Duration: </span>
+                      <span className="text-black">{train.duration}</span>
                     </div>
                   </div>
                 </div>
@@ -387,11 +398,11 @@ export default function MapPage() {
       {showTransportModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
+                        <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-black">
                 Choose Transport from {selectedPickupPoint?.name}
               </h2>
-              <button onClick={closeModals} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+              <button onClick={closeModals} className="text-black hover:text-gray-700 text-2xl">×</button>
             </div>
 
             <div className="space-y-4">
@@ -400,16 +411,16 @@ export default function MapPage() {
                 onClick={() => handleTransportModeSelect('train')}
               >
                 <div className="text-4xl mb-2">🚆</div>
-                <h3 className="text-xl font-semibold text-gray-800">Train</h3>
-                <p className="text-gray-600">Travel by train to Chennai</p>
+                <h3 className="text-xl font-semibold text-black">Train</h3>
+                <p className="text-black">Travel by train to Chennai</p>
               </div>
               <div
                 className="border-2 border-green-200 rounded-lg p-6 hover:bg-green-50 cursor-pointer transition-colors text-center"
                 onClick={() => handleTransportModeSelect('airline')}
               >
                 <div className="text-4xl mb-2">✈️</div>
-                <h3 className="text-xl font-semibold text-gray-800">Airlines</h3>
-                <p className="text-gray-600">Fly to Chennai</p>
+                <h3 className="text-xl font-semibold text-black">Airlines</h3>
+                <p className="text-black">Fly to Chennai</p>
               </div>
             </div>
           </div>
@@ -420,9 +431,9 @@ export default function MapPage() {
       {showAirlineModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Select Flight</h2>
-              <button onClick={closeModals} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                        <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-black">Select Flight</h2>
+              <button onClick={closeModals} className="text-black hover:text-gray-700 text-2xl">×</button>
             </div>
 
             <div className="space-y-3">
@@ -434,11 +445,11 @@ export default function MapPage() {
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="font-semibold text-gray-800">{airline.airline}</h3>
-                      <p className="text-sm text-gray-600">{airline.flightNo}</p>
+                      <h3 className="font-semibold text-black">{airline.airline}</h3>
+                      <p className="text-sm text-black">{airline.flightNo}</p>
                     </div>
                     <div className="text-right">
-                      <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                      <div className="bg-green-100 text-black px-3 py-1 rounded-full text-sm font-medium">
                         {airline.departure}
                       </div>
                     </div>
@@ -446,20 +457,20 @@ export default function MapPage() {
 
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-500">Departure: </span>
-                      <span className="text-gray-800">{airline.departure}</span>
+                      <span className="text-black">Departure: </span>
+                      <span className="text-black">{airline.departure}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Arrival: </span>
-                      <span className="text-gray-800">{airline.arrival}</span>
+                      <span className="text-black">Arrival: </span>
+                      <span className="text-black">{airline.arrival}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Duration: </span>
-                      <span className="text-gray-800">{airline.duration}</span>
+                      <span className="text-black">Duration: </span>
+                      <span className="text-black">{airline.duration}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Aircraft: </span>
-                      <span className="text-gray-800">{airline.aircraft}</span>
+                      <span className="text-black">Aircraft: </span>
+                      <span className="text-black">{airline.aircraft}</span>
                     </div>
                   </div>
                 </div>
@@ -473,23 +484,23 @@ export default function MapPage() {
       {showInstructionsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Cooking Instructions</h2>
-              <button onClick={closeModals} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                        <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-black">Cooking Instructions</h2>
+              <button onClick={closeModals} className="text-black hover:text-gray-700 text-2xl">×</button>
             </div>
 
             <div className="mb-6">
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                <h3 className="font-semibold text-yellow-800 mb-2">Recommended Items:</h3>
-                <p className="text-yellow-700">{cookingInstructions[0]}</p>
+                <h3 className="font-semibold text-black mb-2">Recommended Items:</h3>
+                <p className="text-black">{cookingInstructions[0]}</p>
               </div>
 
               <div className="space-y-3">
-                <h3 className="font-semibold text-gray-800">Important Guidelines:</h3>
+                <h3 className="font-semibold text-black">Important Guidelines:</h3>
                 {cookingInstructions.slice(1).map((instruction, index) => (
                   <div key={index} className="flex items-start">
                     <span className="text-red-500 mr-2">•</span>
-                    <p className="text-gray-700">{instruction}</p>
+                    <p className="text-black">{instruction}</p>
                   </div>
                 ))}
               </div>
@@ -509,22 +520,22 @@ export default function MapPage() {
       {showItemsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Add Items to Send</h2>
-              <button onClick={closeModals} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                        <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-black">Add Items to Send</h2>
+              <button onClick={closeModals} className="text-black hover:text-gray-700 text-2xl">×</button>
             </div>
 
             <div className="space-y-4 mb-6">
               {items.map((item, index) => (
                 <div key={index}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-black mb-1">
                     Item {index + 1}
                   </label>
                   <input
                     type="text"
                     value={item}
                     onChange={(e) => handleItemChange(index, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     placeholder={`Enter item ${index + 1}`}
                   />
                 </div>
@@ -546,46 +557,60 @@ export default function MapPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Order Tracking</h2>
-              <button onClick={closeModals} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+              <h2 className="text-xl font-bold text-black">Order Tracking</h2>
+              <button onClick={closeModals} className="text-black hover:text-gray-700 text-2xl">×</button>
             </div>
 
             <div className="text-center mb-6">
-              <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full inline-block text-lg font-semibold mb-4">
+              <div className="bg-green-100 text-black px-4 py-2 rounded-full inline-flex items-center gap-2 text-lg font-semibold mb-4">
                 {trackingId}
+                <button
+                  onClick={handleCopyToClipboard}
+                  className="ml-2 p-1 hover:bg-green-200 rounded transition-colors"
+                  title="Copy to clipboard"
+                >
+                  {copySuccess ? (
+                    <span className="text-green-600">✓</span>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  )}
+                </button>
               </div>
-              <p className="text-gray-600 mb-2">Your tracking ID has been generated</p>
-              <p className="text-sm text-blue-600">
+              <p className="text-black mb-2">Your tracking ID has been generated</p>
+              <p className="text-sm text-black">
                 Use this ID to track your order on the home page
               </p>
             </div>
 
-            <div className="space-y-4">
+                        <div className="space-y-4">
               <div className="border-l-4 border-green-500 pl-4">
-                <h3 className="font-semibold text-green-700">Order Confirmed</h3>
-                <p className="text-sm text-gray-600">Your order has been placed successfully</p>
+                <h3 className="font-semibold text-black">Order Confirmed</h3>
+                <p className="text-sm text-black">Your order has been placed successfully</p>
               </div>
               <div className="border-l-4 border-yellow-500 pl-4">
-                <h3 className="font-semibold text-yellow-700">Preparing for Pickup</h3>
-                <p className="text-sm text-gray-600">Items are being prepared for collection</p>
+                <h3 className="font-semibold text-black">Preparing for Pickup</h3>
+                <p className="text-sm text-black">Items are being prepared for collection</p>
               </div>
               <div className="border-l-4 border-gray-300 pl-4">
-                <h3 className="font-semibold text-gray-500">In Transit</h3>
-                <p className="text-sm text-gray-600">Your package will be picked up soon</p>
+                <h3 className="font-semibold text-black">In Transit</h3>
+                <p className="text-sm text-black">Your package will be picked up soon</p>
               </div>
               <div className="border-l-4 border-gray-300 pl-4">
-                <h3 className="font-semibold text-gray-500">Delivered</h3>
-                <p className="text-sm text-gray-600">Package delivered to destination</p>
+                <h3 className="font-semibold text-black">Delivered</h3>
+                <p className="text-sm text-black">Package delivered to destination</p>
               </div>
             </div>
-
+            
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h3 className="font-semibold text-blue-800 mb-2">Order Summary:</h3>
-              <p className="text-sm text-blue-700">Pickup: {selectedPickupPoint?.name}</p>
-              <p className="text-sm text-blue-700">
+              <h3 className="font-semibold text-black mb-2">Order Summary:</h3>
+              <p className="text-sm text-black">Pickup: {selectedPickupPoint?.name}</p>
+              <p className="text-sm text-black">
                 Transport: {transportMode === 'train' ? selectedTrain?.name : selectedAirline?.airline}
               </p>
-              <p className="text-sm text-blue-700">Items: {items.filter(item => item.trim()).length} items</p>
+              <p className="text-sm text-black">Items: {items.filter(item => item.trim()).length} items</p>
             </div>
 
             <div className="mt-6 flex gap-3">

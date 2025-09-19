@@ -26,11 +26,11 @@ interface SidebarProps {
 export default function Sidebar({ onPickupPointSelect }: SidebarProps) {
   return (
     <div className="w-80 bg-white shadow-lg p-6 overflow-y-auto">
-      <h2 className="text-xl font-bold mb-6">Trip Details</h2>
-      
+      <h2 className="text-xl font-bold mb-6 text-black">Trip Details</h2>
+
       <div className="space-y-4 mb-6">
         <div>
-          <label htmlFor="from" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="from" className="block text-sm font-medium text-black mb-1">
             From
           </label>
           <input
@@ -38,12 +38,12 @@ export default function Sidebar({ onPickupPointSelect }: SidebarProps) {
             id="from"
             value="Delhi"
             readOnly
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-black"
           />
         </div>
-        
+
         <div>
-          <label htmlFor="to" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="to" className="block text-sm font-medium text-black mb-1">
             To
           </label>
           <input
@@ -51,13 +51,13 @@ export default function Sidebar({ onPickupPointSelect }: SidebarProps) {
             id="to"
             value="Chennai"
             readOnly
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-black"
           />
         </div>
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold mb-4">Available Pickup Points</h3>
+        <h3 className="text-lg font-semibold mb-4 text-black">Available Pickup Points</h3>
         <div className="space-y-2">
           {pickupPoints.map((point) => (
             <div
@@ -65,8 +65,8 @@ export default function Sidebar({ onPickupPointSelect }: SidebarProps) {
               className="p-3 border border-gray-200 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors"
               onClick={() => onPickupPointSelect(point.id)}
             >
-              <div className="font-medium text-sm">{point.name}</div>
-              <div className="text-xs text-gray-600 mt-1">{point.address}</div>
+              <div className="font-medium text-sm text-black">{point.name}</div>
+              <div className="text-xs text-black mt-1">{point.address}</div>
             </div>
           ))}
         </div>

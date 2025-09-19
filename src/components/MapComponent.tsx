@@ -49,13 +49,13 @@ export default function MapComponent({ selectedPickupPoint }: MapComponentProps)
         .setPopup(
           new maplibregl.Popup().setHTML(
             `<div class="p-2">
-              <h3 class="font-semibold">${point.name}</h3>
-              <p class="text-sm text-gray-600">${point.address}</p>
+              <h3 class="font-semibold text-black">${point.name}</h3>
+              <p class="text-sm text-black">${point.address}</p>
             </div>`
           )
         )
         .addTo(map.current!);
-      
+
       markers.current.push(marker);
     });
 
