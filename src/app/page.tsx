@@ -44,7 +44,7 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold text-purple-600 mb-4">
-            Fast delivery in Chennai & Delhi
+            Fast delivery in Chennai From Delhi
           </h1>
           <p className="text-xl text-gray-600 mb-8">
             Your homemade food delivered fast at your doorstep.
