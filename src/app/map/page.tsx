@@ -234,11 +234,38 @@ export default function MapPage() {
 
   const handleCopyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(trackingId);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
+      // Modern approach
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(trackingId);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = trackingId;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          document.execCommand('copy');
+          setCopySuccess(true);
+          setTimeout(() => setCopySuccess(false), 2000);
+        } catch (fallbackError) {
+          console.error('Fallback copy failed: ', fallbackError);
+          alert('Copy failed. Please manually select and copy the tracking ID.');
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+
     } catch (err) {
       console.error('Failed to copy: ', err);
+      // Show fallback message
+      alert(`Copy failed. Please manually copy this ID: ${trackingId}`);
     }
   };
 
@@ -268,7 +295,7 @@ export default function MapPage() {
       // Add pickup point markers
       pickupPoints.forEach(point => {
         if (map.current) {
-          const marker = new maptilersdk.Marker({ color: '#FF0000' })
+          new maptilersdk.Marker({ color: '#FF0000' })
             .setLngLat(point.coordinates)
             .setPopup(new maptilersdk.Popup().setHTML(`<strong>${point.name}</strong><br>${point.address}`))
             .addTo(map.current);
@@ -603,7 +630,7 @@ export default function MapPage() {
                 <p className="text-sm text-black">Package delivered to destination</p>
               </div>
             </div>
-            
+
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
               <h3 className="font-semibold text-black mb-2">Order Summary:</h3>
               <p className="text-sm text-black">Pickup: {selectedPickupPoint?.name}</p>

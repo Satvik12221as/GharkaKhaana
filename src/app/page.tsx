@@ -1,12 +1,23 @@
 'use client';
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const [orderId, setOrderId] = useState('');
   const [selectedCity, setSelectedCity] = useState('Chennai');
-  const [trackingResult, setTrackingResult] = useState<any>(null);
+  const [trackingResult, setTrackingResult] = useState<{
+    trackingId: string;
+    pickupPoint: string;
+    transport: string;
+    transportDetails: string;
+    items: string[];
+    transportMode: string;
+    createdAt: string;
+    status: string;
+  } | null>(null);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   const handleTrackOrder = () => {
     if (!orderId.trim()) {
@@ -23,6 +34,33 @@ export default function Home() {
     }
   };
 
+  const toggleProfileDropdown = () => {
+    setShowProfileDropdown(!showProfileDropdown);
+  };
+
+  const openContactModal = () => {
+    setShowContactModal(true);
+  };
+
+  const closeContactModal = () => {
+    setShowContactModal(false);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (showProfileDropdown && !target.closest('.profile-dropdown')) {
+        setShowProfileDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showProfileDropdown]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 to-pink-100">
       {/* Header */}
@@ -32,10 +70,39 @@ export default function Home() {
             <div className="w-8 h-8 bg-purple-600 rounded-full"></div>
             <span className="text-xl font-bold text-black">GharKaKhaana</span>
           </div>
-          <nav className="flex gap-6">
+          <nav className="flex gap-6 items-center">
             <Link href="/" className="text-black hover:text-purple-600 transition-colors">Home</Link>
             <Link href="#track" className="text-black hover:text-purple-600 transition-colors">Track</Link>
-            <Link href="#profile" className="text-black hover:text-purple-600 transition-colors">Profile</Link>
+
+                        {/* Profile Dropdown */}
+            <div className="relative profile-dropdown">
+              <button
+                onClick={toggleProfileDropdown}
+                className="text-black hover:text-purple-600 transition-colors"
+              >
+                Profile
+              </button>
+              {showProfileDropdown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                  <div className="py-1">
+                    <a href="#account" className="block px-4 py-2 text-sm text-black hover:bg-gray-100">
+                      Account
+                    </a>
+                    <a href="#orders" className="block px-4 py-2 text-sm text-black hover:bg-gray-100">
+                      Orders
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Contact Us Button */}
+            <button
+              onClick={openContactModal}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Contact Us
+            </button>
           </nav>
         </div>
       </header>
@@ -170,6 +237,69 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Contact Us Modal */}
+      {showContactModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-black">About GharKaKhaana</h2>
+              <button onClick={closeContactModal} className="text-black hover:text-gray-700 text-2xl">×</button>
+            </div>
+
+            <div className="space-y-6">
+              <p className="text-black leading-relaxed">
+                GharKaKhaana is a licensed and trusted food delivery platform dedicated to bringing homemade meals from your loved ones straight to you.
+              </p>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 className="font-semibold text-black mb-3">✅ We hold all necessary authorizations, including:</h3>
+                <ul className="space-y-1 text-black ml-4">
+                  <li>• Business License</li>
+                  <li>• FSSAI License</li>
+                  <li>• PAN of Proprietor</li>
+                  <li>• Verified Company Profile</li>
+                </ul>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-black mb-3">✅ Quality Promise:</h3>
+                <p className="text-black">
+                  Your food is never subjected to artificial preservation or harmful processing. We ensure that it reaches you with the same freshness and care as when it was prepared.
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h3 className="font-semibold text-black mb-3">✅ Delivery Guarantee:</h3>
+                <p className="text-black">
+                  If your food is delayed beyond 2 days, we provide a 100% refund—no questions asked.
+                </p>
+              </div>
+
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <h3 className="font-semibold text-black mb-3">Get in Contact:</h3>
+                <div className="space-y-2">
+                  <p className="text-black">
+                    <span className="font-medium">Email:</span> support@gharkakhaana.co
+                  </p>
+                  <p className="text-black">
+                    <span className="font-medium">Phone:</span> +91 88888 88888
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={closeContactModal}
+                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
