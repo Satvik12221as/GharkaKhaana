@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import * as maptilersdk from '@maptiler/sdk';
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 
@@ -201,6 +202,24 @@ export default function MapPage() {
 
   const handleItemsSubmit = () => {
     const newTrackingId = 'TRK' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+    // Prepare order data for localStorage
+    const orderData = {
+      trackingId: newTrackingId,
+      pickupPoint: selectedPickupPoint?.name,
+      transport: transportMode === 'train' ? selectedTrain?.name : selectedAirline?.airline,
+      transportDetails: transportMode === 'train' ?
+        `${selectedTrain?.number} - Dep: ${selectedTrain?.departure}` :
+        `${selectedAirline?.flightNo} - Dep: ${selectedAirline?.departure}`,
+      items: items.filter(item => item.trim()),
+      transportMode,
+      createdAt: new Date().toISOString(),
+      status: 'Order Confirmed'
+    };
+
+    // Store in localStorage
+    localStorage.setItem(`order_${newTrackingId}`, JSON.stringify(orderData));
+
     setTrackingId(newTrackingId);
     setShowItemsModal(false);
     setShowTrackingModal(true);
@@ -535,7 +554,10 @@ export default function MapPage() {
               <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full inline-block text-lg font-semibold mb-4">
                 {trackingId}
               </div>
-              <p className="text-gray-600">Your tracking ID has been generated</p>
+              <p className="text-gray-600 mb-2">Your tracking ID has been generated</p>
+              <p className="text-sm text-blue-600">
+                Use this ID to track your order on the home page
+              </p>
             </div>
 
             <div className="space-y-4">
@@ -564,6 +586,21 @@ export default function MapPage() {
                 Transport: {transportMode === 'train' ? selectedTrain?.name : selectedAirline?.airline}
               </p>
               <p className="text-sm text-blue-700">Items: {items.filter(item => item.trim()).length} items</p>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <Link
+                href="/"
+                className="flex-1 bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors text-center"
+              >
+                Go to Home Page
+              </Link>
+              <button
+                onClick={closeModals}
+                className="flex-1 bg-gray-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
