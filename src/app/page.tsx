@@ -47,7 +47,7 @@ export default function Home() {
             Fast delivery in Chennai & Delhi
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            Groceries, essentials, and more — delivered lightning fast.
+            Your homemade food delivered fast at your doorstep.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
