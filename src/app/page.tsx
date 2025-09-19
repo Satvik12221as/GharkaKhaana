@@ -150,10 +150,9 @@ export default function Home() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-800 mb-3">Cities</h3>
+              <h3 className="font-semibold text-gray-800 mb-3">City</h3>
               <ul className="space-y-1 text-sm text-gray-600">
                 <li>Chennai</li>
-                <li>Delhi</li>
               </ul>
             </div>
 
