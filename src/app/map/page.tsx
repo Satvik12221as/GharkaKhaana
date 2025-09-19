@@ -1,0 +1,573 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import * as maptilersdk from '@maptiler/sdk';
+import '@maptiler/sdk/dist/maptiler-sdk.css';
+
+// Sample pickup points in Delhi
+const pickupPoints = [
+  { id: 1, name: "Connaught Place", coordinates: [77.2167, 28.6292] as [number, number], address: "Block A, Connaught Place, New Delhi" },
+  { id: 2, name: "India Gate", coordinates: [77.2295, 28.6129] as [number, number], address: "India Gate, Rajpath, New Delhi" },
+  { id: 3, name: "Red Fort", coordinates: [77.2410, 28.6562] as [number, number], address: "Netaji Subhash Marg, Chandni Chowk, New Delhi" },
+  { id: 4, name: "Karol Bagh Metro", coordinates: [77.1925, 28.6506] as [number, number], address: "Karol Bagh Metro Station, New Delhi" },
+  { id: 5, name: "Rajouri Garden", coordinates: [77.1219, 28.6469] as [number, number], address: "Rajouri Garden Metro Station, New Delhi" },
+  { id: 6, name: "Dwarka Sector 21", coordinates: [77.0590, 28.5921] as [number, number], address: "Dwarka Sector 21 Metro Station, New Delhi" },
+  { id: 7, name: "Nehru Place", coordinates: [77.2482, 28.5495] as [number, number], address: "Nehru Place Metro Station, New Delhi" },
+  { id: 8, name: "Lajpat Nagar", coordinates: [77.2431, 28.5687] as [number, number], address: "Lajpat Nagar Central Market, New Delhi" }
+];
+
+// Train data from Delhi to Chennai
+const trains = [
+  {
+    id: 1,
+    number: "12622",
+    name: "Tamil Nadu Express",
+    departure: "22:30",
+    departureStation: "New Delhi (NDLS)",
+    arrival: "07:10",
+    arrivalStation: "Chennai Central",
+    duration: "≈ 33h 30m",
+    frequency: "Daily"
+  },
+  {
+    id: 2,
+    number: "12616",
+    name: "Grand Trunk Express",
+    departure: "16:10",
+    departureStation: "New Delhi",
+    arrival: "04:45",
+    arrivalStation: "Chennai Central",
+    duration: "≈ 36h 35m",
+    frequency: "Daily"
+  },
+  {
+    id: 3,
+    number: "12270",
+    name: "Mas Duronto Express",
+    departure: "15:55",
+    departureStation: "Hazrat Nizamuddin",
+    arrival: "20:55",
+    arrivalStation: "Chennai Central",
+    duration: "≈ 29-30h",
+    frequency: "Tue & Sat"
+  },
+  {
+    id: 4,
+    number: "12434",
+    name: "Rajdhani Express",
+    departure: "15:35",
+    departureStation: "Hazrat Nizamuddin",
+    arrival: "21:00",
+    arrivalStation: "Chennai Central",
+    duration: "≈ 29h 25m",
+    frequency: "Wed & Fri"
+  },
+  {
+    id: 5,
+    number: "12612",
+    name: "Garib Rath SF Express",
+    departure: "15:35",
+    departureStation: "Hazrat Nizamuddin",
+    arrival: "21:00",
+    arrivalStation: "Chennai Central",
+    duration: "≈ 29h 25m",
+    frequency: "Weekly"
+  },
+  {
+    id: 6,
+    number: "22404",
+    name: "NDLS-Pondicherry Superfast Exp",
+    departure: "23:15",
+    departureStation: "New Delhi",
+    arrival: "09:25",
+    arrivalStation: "Chennai Egmore",
+    duration: "≈ 34h 10m",
+    frequency: "Weekly (Sun etc.)"
+  },
+  {
+    id: 7,
+    number: "16032",
+    name: "Andaman Express",
+    departure: "14:00",
+    departureStation: "New Delhi",
+    arrival: "06:50",
+    arrivalStation: "Chennai Central",
+    duration: "≈ 40-41h",
+    frequency: "Sun / Wed / Sat"
+  }
+];
+
+// Airline data from Delhi to Chennai
+const airlines = [
+  {
+    id: 1,
+    airline: "Air India",
+    flightNo: "AI2483",
+    departure: "12:15",
+    arrival: "15:00",
+    duration: "2h45m",
+    stops: "Nonstop",
+    aircraft: "A321"
+  },
+  {
+    id: 2,
+    airline: "IndiGo",
+    flightNo: "6E123",
+    departure: "13:30",
+    arrival: "16:15",
+    duration: "2h45m",
+    stops: "Nonstop",
+    aircraft: "A320"
+  },
+  {
+    id: 3,
+    airline: "Vistara",
+    flightNo: "UK567",
+    departure: "15:45",
+    arrival: "18:35",
+    duration: "2h50m",
+    stops: "Nonstop",
+    aircraft: "A320"
+  },
+  {
+    id: 4,
+    airline: "SpiceJet",
+    flightNo: "SG890",
+    departure: "18:10",
+    arrival: "20:55",
+    duration: "2h45m",
+    stops: "Nonstop",
+    aircraft: "B737"
+  }
+];
+
+// Cooking instructions
+const cookingInstructions = [
+  "Sambhar, chappati, Dal, Rice, chicken curry",
+  "Don't put too much oil/spice in your food",
+  "Don't pack hot food, keep it in cool area for sometime before packing",
+  "Don't put food in open space which causes moisture loss"
+];
+
+export default function MapPage() {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<maptilersdk.Map | null>(null);
+  const [fromLocation, setFromLocation] = useState('Delhi');
+  const [toLocation, setToLocation] = useState('Chennai');
+  const [showTransportModal, setShowTransportModal] = useState(false);
+  const [showTrainModal, setShowTrainModal] = useState(false);
+  const [showAirlineModal, setShowAirlineModal] = useState(false);
+  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+  const [showItemsModal, setShowItemsModal] = useState(false);
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
+  const [selectedPickupPoint, setSelectedPickupPoint] = useState<typeof pickupPoints[0] | null>(null);
+  const [selectedTrain, setSelectedTrain] = useState<typeof trains[0] | null>(null);
+  const [selectedAirline, setSelectedAirline] = useState<typeof airlines[0] | null>(null);
+  const [transportMode, setTransportMode] = useState<'train' | 'airline' | null>(null);
+  const [items, setItems] = useState<string[]>(['', '', '', '', '']);
+  const [trackingId, setTrackingId] = useState<string>('');
+
+  const handlePickupPointClick = (point: typeof pickupPoints[0]) => {
+    setSelectedPickupPoint(point);
+    setShowTransportModal(true);
+  };
+
+  const handleTransportModeSelect = (mode: 'train' | 'airline') => {
+    setTransportMode(mode);
+    setShowTransportModal(false);
+    if (mode === 'train') {
+      setShowTrainModal(true);
+    } else {
+      setShowAirlineModal(true);
+    }
+  };
+
+  const handleTrainSelect = (train: typeof trains[0]) => {
+    setSelectedTrain(train);
+    setShowTrainModal(false);
+    setShowInstructionsModal(true);
+  };
+
+  const handleAirlineSelect = (airline: typeof airlines[0]) => {
+    setSelectedAirline(airline);
+    setShowAirlineModal(false);
+    setShowInstructionsModal(true);
+  };
+
+  const handleInstructionsNext = () => {
+    setShowInstructionsModal(false);
+    setShowItemsModal(true);
+  };
+
+  const handleItemsSubmit = () => {
+    const newTrackingId = 'TRK' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    setTrackingId(newTrackingId);
+    setShowItemsModal(false);
+    setShowTrackingModal(true);
+  };
+
+  const handleItemChange = (index: number, value: string) => {
+    const newItems = [...items];
+    newItems[index] = value;
+    setItems(newItems);
+  };
+
+  const closeModals = () => {
+    setShowTransportModal(false);
+    setShowTrainModal(false);
+    setShowAirlineModal(false);
+    setShowInstructionsModal(false);
+    setShowItemsModal(false);
+    setShowTrackingModal(false);
+  };
+
+  useEffect(() => {
+    if (map.current) return; // stops map from initializing more than once
+
+    // Configure MapTiler API key from environment variables
+    maptilersdk.config.apiKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY || 'YOUR_MAPTILER_API_KEY';
+
+    if (mapContainer.current) {
+      map.current = new maptilersdk.Map({
+        container: mapContainer.current,
+        style: maptilersdk.MapStyle.STREETS,
+        center: [77.2090, 28.6139], // Delhi coordinates
+        zoom: 11
+      });
+
+      // Add pickup point markers
+      pickupPoints.forEach(point => {
+        if (map.current) {
+          const marker = new maptilersdk.Marker({ color: '#FF0000' })
+            .setLngLat(point.coordinates)
+            .setPopup(new maptilersdk.Popup().setHTML(`<strong>${point.name}</strong><br>${point.address}`))
+            .addTo(map.current);
+        }
+      });
+    }
+  }, []);
+
+  return (
+    <div className="flex h-screen">
+      {/* Sidebar */}
+      <div className="w-80 bg-gray-50 p-6 shadow-lg overflow-y-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Choose Path</h1>
+
+          {/* From Field */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">From</label>
+            <input
+              type="text"
+              value={fromLocation}
+              onChange={(e) => setFromLocation(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter departure location"
+            />
+          </div>
+
+          {/* To Field */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">To</label>
+            <input
+              type="text"
+              value={toLocation}
+              onChange={(e) => setToLocation(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter destination"
+            />
+          </div>
+
+          {/* Pickup Points List */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">Available Pickup Points</h2>
+            <div className="space-y-3">
+              {pickupPoints.map((point) => (
+                <div
+                  key={point.id}
+                  className="p-3 bg-white rounded-md border border-gray-200 hover:shadow-sm transition-shadow cursor-pointer hover:bg-blue-50"
+                  onClick={() => handlePickupPointClick(point)}
+                >
+                  <h3 className="font-medium text-gray-800">{point.name}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{point.address}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Map Container */}
+      <div className="flex-1 relative">
+        <div ref={mapContainer} className="w-full h-full" />
+      </div>
+
+      {/* Train Selection Modal */}
+      {showTrainModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">
+                Select Train from {selectedPickupPoint?.name}
+              </h2>
+              <button
+                onClick={closeModals}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {trains.map((train) => (
+                <div
+                  key={train.id}
+                  className="border border-gray-200 rounded-lg p-4 hover:bg-blue-50 cursor-pointer transition-colors"
+                  onClick={() => handleTrainSelect(train)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-semibold text-gray-800">
+                        {train.number} - {train.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">{train.frequency}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {train.departure}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500">From: </span>
+                      <span className="text-gray-800">{train.departureStation}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">To: </span>
+                      <span className="text-gray-800">{train.arrivalStation}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Arrival: </span>
+                      <span className="text-gray-800">{train.arrival}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Duration: </span>
+                      <span className="text-gray-800">{train.duration}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+            {/* Transport Mode Selection Modal */}
+      {showTransportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">
+                Choose Transport from {selectedPickupPoint?.name}
+              </h2>
+              <button onClick={closeModals} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+            </div>
+
+            <div className="space-y-4">
+              <div
+                className="border-2 border-blue-200 rounded-lg p-6 hover:bg-blue-50 cursor-pointer transition-colors text-center"
+                onClick={() => handleTransportModeSelect('train')}
+              >
+                <div className="text-4xl mb-2">🚆</div>
+                <h3 className="text-xl font-semibold text-gray-800">Train</h3>
+                <p className="text-gray-600">Travel by train to Chennai</p>
+              </div>
+              <div
+                className="border-2 border-green-200 rounded-lg p-6 hover:bg-green-50 cursor-pointer transition-colors text-center"
+                onClick={() => handleTransportModeSelect('airline')}
+              >
+                <div className="text-4xl mb-2">✈️</div>
+                <h3 className="text-xl font-semibold text-gray-800">Airlines</h3>
+                <p className="text-gray-600">Fly to Chennai</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Airline Selection Modal */}
+      {showAirlineModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Select Flight</h2>
+              <button onClick={closeModals} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+            </div>
+
+            <div className="space-y-3">
+              {airlines.map((airline) => (
+                <div
+                  key={airline.id}
+                  className="border border-gray-200 rounded-lg p-4 hover:bg-green-50 cursor-pointer transition-colors"
+                  onClick={() => handleAirlineSelect(airline)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-semibold text-gray-800">{airline.airline}</h3>
+                      <p className="text-sm text-gray-600">{airline.flightNo}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {airline.departure}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500">Departure: </span>
+                      <span className="text-gray-800">{airline.departure}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Arrival: </span>
+                      <span className="text-gray-800">{airline.arrival}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Duration: </span>
+                      <span className="text-gray-800">{airline.duration}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Aircraft: </span>
+                      <span className="text-gray-800">{airline.aircraft}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Instructions Modal */}
+      {showInstructionsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Cooking Instructions</h2>
+              <button onClick={closeModals} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+            </div>
+
+            <div className="mb-6">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <h3 className="font-semibold text-yellow-800 mb-2">Recommended Items:</h3>
+                <p className="text-yellow-700">{cookingInstructions[0]}</p>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-800">Important Guidelines:</h3>
+                {cookingInstructions.slice(1).map((instruction, index) => (
+                  <div key={index} className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <p className="text-gray-700">{instruction}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={handleInstructionsNext}
+              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Items Input Modal */}
+      {showItemsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Add Items to Send</h2>
+              <button onClick={closeModals} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              {items.map((item, index) => (
+                <div key={index}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Item {index + 1}
+                  </label>
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={(e) => handleItemChange(index, e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder={`Enter item ${index + 1}`}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={handleItemsSubmit}
+              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Submit Order
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Tracking Modal */}
+      {showTrackingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Order Tracking</h2>
+              <button onClick={closeModals} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+            </div>
+
+            <div className="text-center mb-6">
+              <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full inline-block text-lg font-semibold mb-4">
+                {trackingId}
+              </div>
+              <p className="text-gray-600">Your tracking ID has been generated</p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="border-l-4 border-green-500 pl-4">
+                <h3 className="font-semibold text-green-700">Order Confirmed</h3>
+                <p className="text-sm text-gray-600">Your order has been placed successfully</p>
+              </div>
+              <div className="border-l-4 border-yellow-500 pl-4">
+                <h3 className="font-semibold text-yellow-700">Preparing for Pickup</h3>
+                <p className="text-sm text-gray-600">Items are being prepared for collection</p>
+              </div>
+              <div className="border-l-4 border-gray-300 pl-4">
+                <h3 className="font-semibold text-gray-500">In Transit</h3>
+                <p className="text-sm text-gray-600">Your package will be picked up soon</p>
+              </div>
+              <div className="border-l-4 border-gray-300 pl-4">
+                <h3 className="font-semibold text-gray-500">Delivered</h3>
+                <p className="text-sm text-gray-600">Package delivered to destination</p>
+              </div>
+            </div>
+
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <h3 className="font-semibold text-blue-800 mb-2">Order Summary:</h3>
+              <p className="text-sm text-blue-700">Pickup: {selectedPickupPoint?.name}</p>
+              <p className="text-sm text-blue-700">
+                Transport: {transportMode === 'train' ? selectedTrain?.name : selectedAirline?.airline}
+              </p>
+              <p className="text-sm text-blue-700">Items: {items.filter(item => item.trim()).length} items</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
